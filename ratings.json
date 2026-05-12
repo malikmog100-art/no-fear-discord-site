@@ -1,0 +1,22 @@
+{
+  "ratings": [],
+  "statistics": {
+    "totalRatings": 0,
+    "averageRating": 0,
+    "ratingDistribution": {
+      "5": 0,
+      "4": 0,
+      "3": 0,
+      "2": 0,
+      "1": 0
+    },
+    "lastUpdated": "2026-12-5-12:30"
+  },
+  "metadata": {
+    "serverName": "𝐍𝐨 𝐅𝐞𝐚𝐫",
+    "serverInvite": "https://discord.gg/0nf",
+    "description": "سيرفر 𝐍𝐨 𝐅𝐞𝐚𝐫 هو مجتمع للتواصل و التعارف ",
+    "createdAt": "2026-12-5-12:30:00Z",
+    "version": "1.0.0"
+  }
+}
