@@ -9,10 +9,16 @@ window.addEventListener('DOMContentLoaded', () => {
 function initializePage() {
     setServerBranding();
     setupEventListeners();
+    setupMobileNav();
+    setupActiveNavHighlight();
+    setupBackToTop();
+    setupScrollProgress();
+    setupFaqAccordion();
+    setupScrollReveal();
     loadRatings();
     loadRules();
     updateAverageRating();
-    startMemberCounter();
+    startLiveServerStats();
 }
 
 function setServerBranding() {
@@ -22,10 +28,10 @@ function setServerBranding() {
     const discordBtn = document.querySelector('.discord-btn');
 
     if (title) title.textContent = SERVER_NAME;
-    if (subtitle) subtitle.textContent = 'سيرفر ديسكورد كومينتي للالعاب و الدردشة';
+    if (subtitle) subtitle.textContent = 'سيرفر ديسكورد لمجتمع الألعاب والدردشة';
     if (inviteLink) inviteLink.textContent = INVITE_LINK;
     if (discordBtn) discordBtn.href = INVITE_LINK;
-    document.title = `${SERVER_NAME} - سيرفر ديسكورد كومينتي`;
+    document.title = `${SERVER_NAME} - سيرفر ديسكورد لمجتمع الألعاب`;
 }
 
 function setupEventListeners() {
@@ -59,6 +65,7 @@ function setupEventListeners() {
             if (targetSection) {
                 targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
+            closeMobileNav();
         });
     });
 
@@ -298,17 +305,17 @@ function displayFallbackRules() {
     rulesContent.innerHTML = `
         <h3>قواعد NO Fear</h3>
         <ul>
-            <li>يمنع منعا باتا القذف و السب و المساس بالدين.</li>
-            <li>يمنع نشر الصور و الفيديوهات المخلة بالاداب.</li>
-            <li>يمنع الرد بالخطأ باي مشكلة كانت.</li>
-            <li>استفزاز الاعضاء و الجدوله المتكرره يعرضك للسجن.</li>
-            <li>الدخول بحسابات وهميه يعرضك للسجن.</li>
-             <li>النشر بالعام او بالخاص يعرضك للبان.</li>
+            <li>يُمنع منعًا باتًا القذف والسب والمساس بالأديان.</li>
+            <li>يُمنع نشر الصور والفيديوهات المخلة بالآداب العامة.</li>
+            <li>يُمنع الإساءة للأعضاء أو التعامل بطريقة غير لائقة عند حدوث أي مشكلة.</li>
+            <li>استفزاز الأعضاء والجدال المتكرر يعرضك للطرد أو الحظر.</li>
+            <li>استخدام حسابات وهمية أو مزيفة يعرضك للحظر الدائم.</li>
+            <li>النشر بالإعلانات في العام أو الخاص دون إذن يعرضك للحظر.</li>
         </ul>
         <h3>العقوبات</h3>
         <ul>
-            <li>تحذير أول ثم حظر مؤقت في حال التكرار.</li>
-            <li>السجن الدائم للمخالفات الشديدة.</li>
+            <li>تحذير أول، ثم حظر مؤقت في حال التكرار.</li>
+            <li>حظر دائم للمخالفات الشديدة أو المتكررة.</li>
         </ul>
     `;
 }
@@ -476,14 +483,174 @@ function downloadUpdatedJSON() {
     showNotification('تم تحميل ملف JSON المحدث!', 'success');
 }
 
-function startMemberCounter() {
-    const memberCount = document.getElementById('memberCount');
-    if (!memberCount) return;
-    let current = 1800;
-    memberCount.textContent = `+${current} عضو`;
+function setupMobileNav() {
+    const navToggle = document.getElementById('navToggle');
+    const navList = document.getElementById('navList');
+    if (!navToggle || !navList) return;
 
-    setInterval(() => {
-        current += Math.floor(Math.random() * 4);
-        memberCount.textContent = `+${current} عضو`;
-    }, 5000);
+    navToggle.addEventListener('click', () => {
+        const isOpen = navList.classList.toggle('open');
+        navToggle.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    document.addEventListener('click', (event) => {
+        const isClickInsideNav = navToggle.contains(event.target) || navList.contains(event.target);
+        if (!isClickInsideNav) {
+            closeMobileNav();
+        }
+    });
+}
+
+function closeMobileNav() {
+    const navToggle = document.getElementById('navToggle');
+    const navList = document.getElementById('navList');
+    if (!navToggle || !navList) return;
+    navList.classList.remove('open');
+    navToggle.setAttribute('aria-expanded', 'false');
+}
+
+function setupActiveNavHighlight() {
+    const sections = document.querySelectorAll('.section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+    if (!sections.length || !navLinks.length) return;
+
+    const setActive = (id) => {
+        navLinks.forEach(link => {
+            link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+        });
+    };
+
+    if (!('IntersectionObserver' in window)) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                setActive(entry.target.id);
+            }
+        });
+    }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+
+    sections.forEach(section => observer.observe(section));
+}
+
+function setupBackToTop() {
+    const backToTop = document.getElementById('backToTop');
+    if (!backToTop) return;
+
+    window.addEventListener('scroll', () => {
+        backToTop.classList.toggle('show', window.scrollY > 400);
+    });
+
+    backToTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
+function setupScrollReveal() {
+    const targets = document.querySelectorAll(
+        '.feature-card, .event-card, .faq-card, .info-card, .rating-form, .ratings-display'
+    );
+    if (!targets.length) return;
+
+    targets.forEach((element, index) => {
+        element.classList.add('reveal');
+        element.style.transitionDelay = `${(index % 4) * 0.08}s`;
+    });
+
+    if (!('IntersectionObserver' in window)) {
+        targets.forEach(element => element.classList.add('in-view'));
+        return;
+    }
+
+    const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('in-view');
+                obs.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.15 });
+
+    targets.forEach(element => observer.observe(element));
+}
+
+function setupScrollProgress() {
+    const progressBar = document.getElementById('scrollProgress');
+    if (!progressBar) return;
+
+    const updateProgress = () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const percentage = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        progressBar.style.width = `${percentage}%`;
+    };
+
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    updateProgress();
+}
+
+function setupFaqAccordion() {
+    document.querySelectorAll('.faq-question').forEach(button => {
+        button.addEventListener('click', () => {
+            const answer = button.nextElementSibling;
+            const isOpen = button.getAttribute('aria-expanded') === 'true';
+
+            document.querySelectorAll('.faq-question').forEach(otherButton => {
+                if (otherButton !== button) {
+                    otherButton.setAttribute('aria-expanded', 'false');
+                    otherButton.nextElementSibling?.classList.remove('open');
+                }
+            });
+
+            button.setAttribute('aria-expanded', String(!isOpen));
+            if (answer) answer.classList.toggle('open', !isOpen);
+        });
+    });
+}
+
+const INVITE_CODE = INVITE_LINK.split('/').pop();
+let liveStatsIntervalId = null;
+
+function startLiveServerStats() {
+    fetchLiveServerStats();
+    liveStatsIntervalId = setInterval(fetchLiveServerStats, 60000);
+}
+
+function fetchLiveServerStats() {
+    const memberCountElement = document.getElementById('memberCount');
+    const onlineCountElement = document.getElementById('onlineCount');
+    const liveBadge = document.getElementById('liveBadge');
+
+    fetch(`https://discord.com/api/v10/invites/${INVITE_CODE}?with_counts=true&with_expiration=true`)
+        .then(response => {
+            if (!response.ok) throw new Error('invite lookup failed');
+            return response.json();
+        })
+        .then(data => {
+            const totalMembers = data.approximate_member_count;
+            const onlineMembers = data.approximate_presence_count;
+
+            if (memberCountElement && typeof totalMembers === 'number') {
+                memberCountElement.textContent = `${totalMembers.toLocaleString('ar-EG')} عضو`;
+            }
+            if (onlineCountElement && typeof onlineMembers === 'number') {
+                onlineCountElement.textContent = `${onlineMembers.toLocaleString('ar-EG')} عضو متصل`;
+            }
+            if (liveBadge) {
+                liveBadge.textContent = '● مباشر';
+                liveBadge.title = 'بيانات مباشرة من ديسكورد';
+            }
+        })
+        .catch(() => {
+            if (memberCountElement && memberCountElement.textContent === 'جاري التحميل...') {
+                memberCountElement.textContent = 'غير متاح حاليًا';
+            }
+            if (onlineCountElement && onlineCountElement.textContent === 'جاري التحميل...') {
+                onlineCountElement.textContent = 'غير متاح حاليًا';
+            }
+            if (liveBadge) {
+                liveBadge.textContent = '⚠ غير متصل';
+                liveBadge.title = 'تعذّر جلب البيانات المباشرة حاليًا';
+            }
+        });
 }
